@@ -2,6 +2,8 @@
 
 # docs
 
+Part of [mast](https://mastmq.github.io/), a multi-tenant MQTT broker built on core NATS.
+
 Operational guides for [mast](https://github.com/mastmq/mast). Design notes live next to the code, in [mast/docs/ARCHITECTURE.md](https://github.com/mastmq/mast/blob/main/docs/ARCHITECTURE.md), because they change when the code does.
 
 | Guide | |
