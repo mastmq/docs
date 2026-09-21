@@ -1,3 +1,5 @@
+<img src="https://raw.githubusercontent.com/mastmq/.github/main/assets/mark-256.png" alt="mast" width="88" align="right">
+
 # docs
 
 Operational guides for [mast](https://github.com/mastmq/mast). Design notes live next to the code, in [mast/docs/ARCHITECTURE.md](https://github.com/mastmq/mast/blob/main/docs/ARCHITECTURE.md), because they change when the code does.
