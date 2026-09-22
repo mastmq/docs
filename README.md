@@ -9,3 +9,4 @@ Operational guides for [mast](https://github.com/mastmq/mast). Design notes live
 | Guide | |
 | --- | --- |
 | [Migrating from EMQX](guides/migrating-from-emqx.md) | What maps across, what does not, and the traps found doing it |
+| [Delivery guarantees](guides/delivery-guarantees.md) | What each QoS actually promises, hop by hop, and where a cluster weakens it |
