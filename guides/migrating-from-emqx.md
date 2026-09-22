@@ -50,6 +50,6 @@ Will messages are not delivered ([#6](https://github.com/mastmq/mast/issues/6)).
 
 There is no connection rate limit, so a reconnect storm reaches the auth service unthrottled where EMQX would have capped it.
 
-Sessions survive a client reconnecting but not a broker restart or a move between nodes ([#8](https://github.com/mastmq/mast/issues/8)). At a single replica this matches EMQX without persistent session storage configured.
+Sessions survive a client reconnecting, a broker restart, and a move to another node: subscriptions and the QoS 1 and 2 backlog live in the shared key-value buckets. At a single replica this is already more than EMQX gives you without persistent session storage configured.
 
 There is no dashboard and no management API.
