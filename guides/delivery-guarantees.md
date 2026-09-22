@@ -11,7 +11,7 @@ What mast promises a client, hop by hop, and where the promise is weaker than an
 | QoS 1 / 2, across nodes | **Best-effort.** The publisher is told delivered; the message can still be dropped in the fabric ([#11](https://github.com/mastmq/mast/issues/11)) |
 | Retained messages | Durable and cluster-wide. Stored in a JetStream KV bucket, Raft-replicated, not subject to the above |
 | Shared subscriptions | Exactly-once to exactly one group member, but local-first rather than round-robin |
-| Persistent sessions | Resume for the lifetime of the node holding them; not durable across a restart or a move ([#8](https://github.com/mastmq/mast/issues/8)) |
+| Persistent sessions | Durable. Subscriptions and the QoS 1/2 backlog live in the shared key-value buckets, so a session survives a restart and follows a device to another node |
 
 ## Three hops, not one
 
