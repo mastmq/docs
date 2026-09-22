@@ -40,7 +40,15 @@ Core NATS discards rather than buffers. In practice:
 - **A leaf-node reconnect window** — an edge node re-establishing its link to the core
 - **The ingress process dying** after it has acknowledged the client and before the bytes leave it
 
-Today none of these are visible: the bridge registers no NATS async error handler, so a drop produces no log line and no metric. That is [#12](https://github.com/mastmq/mast/issues/12), and it is a prerequisite for treating any of this as measurable rather than theoretical.
+All of these are now visible. The bridge registers a NATS asynchronous error handler, so a drop produces both a log line naming the subject and the count, and a metric:
+
+| Metric | Means |
+| --- | --- |
+| `mast_nats_slow_consumers_total` | **this node discarded messages it had already acknowledged.** Above zero is the alarm |
+| `mast_nats_async_errors_total` | every asynchronous error on the fabric connection, slow consumers included |
+| `mast_nats_disconnects_total` / `mast_nats_reconnects_total` | the fabric connection dropping and coming back |
+
+No other metric can show the loss on its own: `mast_messages_in_total` counts a dropped message as accepted and `mast_messages_out_total` never counts it at all, so before these existed the gap was only visible to somebody subtracting two numbers nobody was subtracting.
 
 ## Is this unusual?
 
@@ -60,7 +68,7 @@ Tracked as [#11](https://github.com/mastmq/mast/issues/11).
 
 **Run standalone and the question disappears.** One process, no fabric hop, full QoS 1 and 2. This is the common case for an edge box or a single-tenant deployment, and it is why mast ships as one binary that clusters rather than a cluster you shrink.
 
-**In a cluster, size the gap before you worry about it.** It costs a message only when the fabric drops one, which is bounded by slow consumers and reconnects rather than being a steady rate. Land [#12](https://github.com/mastmq/mast/issues/12) first so you have a number instead of an anxiety.
+**In a cluster, measure the gap before you worry about it.** It costs a message only when the fabric drops one, which is bounded by slow consumers and reconnects rather than being a steady rate. Scrape `mast_nats_slow_consumers_total` and alert on any increase: if it never moves under your traffic, the gap is theoretical for you, and if it does move you have the subject and the count in the log line next to it.
 
 **If a message genuinely must not be lost, do not lean on QoS alone.** That is true of every MQTT broker and doubly true here. Idempotent handling keyed on an application-level identifier costs little and survives duplicates, drops and the redelivery that [#11](https://github.com/mastmq/mast/issues/11) would introduce.
 
