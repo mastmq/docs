@@ -27,11 +27,11 @@ Then check whether it should also be linked from `mastmq/mast/README.md` or from
 
 **`delivery-guarantees.md`** — what each QoS actually promises hop by hop. This one is load-bearing: it is the public answer to the sharpest criticism the project has received, and it is linked from the broker README's status line, the cross-node bullet and the website.
 
-Its claims are checkable against code, and were checked when written: zero KV operations on a non-retained publish, zero round trips on the fabric hop, and the ingress node acking before the at-most-once hop. **If the broker's delivery path changes, this guide is wrong until it is edited.** `mast/docs/ARCHITECTURE.md` and the broker README move with it.
+Its claims are checkable against code, and were checked when written: zero storage operations on a non-retained QoS 0 publish, QoS 1 and 2 stored on a replicated stream before the ingress node acknowledges them, one consumer per node, and shared subscriptions across nodes still on core NATS. **If the broker's delivery path changes, this guide is wrong until it is edited.** `mast/docs/ARCHITECTURE.md` and the broker README move with it.
 
 ## Tone
 
-These guides say what is true, including when it is unflattering. "QoS 1 within a node, best-effort across nodes" is stated plainly, with the conditions under which it actually drops, and the fix that is designed but not built. Do not soften a limitation into a roadmap item — the credibility of the whole set rests on the reader believing the uncomfortable parts.
+These guides say what is true, including when it is unflattering. What is still best-effort — shared subscriptions across nodes, a node dying holding a message — is stated plainly, with the conditions under which it actually drops. Do not soften a limitation into a roadmap item — the credibility of the whole set rests on the reader believing the uncomfortable parts.
 
 Give numbers where numbers exist and say where they came from. Say when something is a choice other brokers make differently rather than implying there is one right answer.
 
