@@ -44,7 +44,9 @@ The core tier does the keeping. Each core runs a **queuer** that watches the ses
 
 Until this existed, only the edge a device had disconnected from kept anything for it. Edges are the tier that restarts on every deploy, and once that edge was gone nothing anywhere was subscribed on the device's behalf: in a test of 2,000 sleeping devices across a rolling restart of three edges, all 10,000 messages published to them were acknowledged and none was delivered. The same test now delivers all of them, and a harder one — 5,000 sleeping devices, 100,000 messages, a core and an edge killed with SIGKILL during the publish and a second edge killed before they woke — delivered every acknowledged message in nine runs out of nine, with at most a few dozen duplicates in 100,000.
 
-When a device comes back, its queue is read and delivered before anything else is removed, and only what was read is removed, so a node dying in between delivers the backlog again rather than losing it. The edge looks at the queue twice more, five and thirty seconds later, for anything a queuer was still writing when the device arrived.
+When a device comes back, its queue is delivered first, and a message is removed only once the device has acknowledged it. A connection that drops before its acknowledgements, or a node that dies, leaves the backlog to be delivered again on the next connection rather than lost; that is a duplicate, which at-least-once allows. The edge looks at the queue twice more, five and thirty seconds later, for anything a queuer was still writing when the device arrived.
+
+A queuer reads the QoS stream behind the sessions bucket — by seconds in a burst — so it decides whether a device was away by when the stream stored a message, not by what the bucket says when it gets to the message. A queuer that cannot write to the queue stream does not acknowledge the QoS stream either: it retries until the write lands, and the stream keeps the messages meanwhile.
 
 A connection is recorded in the sessions bucket when it resumes a session, so the queuer stops keeping messages the device is now receiving live. That is one replicated write per reconnect of a persistent session.
 
@@ -58,6 +60,8 @@ Measured on one laptop, a core and two edges, every message crossing between edg
 | 2,000 publishes/s, durable stream | 0.64ms | 1.7ms |
 | 10,000 publishes/s, core NATS only (before) | 0.94ms | 23ms |
 | 10,000 publishes/s, durable stream | 12.8ms | 130ms |
+
+Every core also holds every away session in memory, about 430 bytes each in its index: with 300,000 sleeping devices each core settled near 650 MB, loaded them all in about ten seconds and again in three after a restart, and queued every one of 29,750 messages published to them. On a core capped at one CPU, holding that many raised QoS 1 p99 at 5,000 messages a second from about 4ms to 60–80ms, the garbage collector sharing the one processor with routing; at two CPUs per core it was 5–9ms. Give cores at least two CPUs at that scale.
 
 Since the queuer, each core also reads every QoS 1 and 2 message. Measured on three cores capped at one CPU each with 5,000 QoS 1 messages a second crossing between edges, the cores' combined CPU went from about 0.7 of a CPU to about 1.5, and p99 latency from 1.4ms to 4.1ms. A core whose queuer finds no away session for a message does nothing more with it, but it still has to read it.
 
