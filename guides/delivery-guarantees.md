@@ -38,7 +38,7 @@ The stream keeps a message for `fabric.durable_max_age`, five minutes by default
 
 ## While a device is away
 
-A persistent session that has no connection still collects its QoS 1 and 2 messages, up to the newest hundred, for `session.expiry`. QoS 0 is never kept for an absent client, which MQTT allows, and a message is kept at the lower of the publish's QoS and the subscription's.
+A persistent session that has no connection still collects its QoS 1 and 2 messages, up to the newest hundred, for `session.expiry`. The hundred is the default of the tenant's offline queue limit, which the configuration or the authentication backend can set per tenant. It is the same whichever node the device comes back to: before tenant limits, a device that came back to the node it left was resent everything that node's MQTT layer still held for it, up to thousands, and only a device that came back elsewhere got the newest hundred. When the limit is reached the oldest messages go, and `mast_limit_exceeded_total{limit="offline_queue"}` counts them. QoS 0 is never kept for an absent client, which MQTT allows, and a message is kept at the lower of the publish's QoS and the subscription's.
 
 The core tier does the keeping. Each core runs a **queuer** that watches the sessions bucket — so it knows which sessions are away and what they subscribed to — and reads the `mast_qos` stream through one consumer of its own, writing every matching message to the away session's queue. The edge that last held the session writes the same messages at the moment it sees the client gone. Every writer names a message the same way, so the queue stream keeps one copy.
 
